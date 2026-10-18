@@ -1,0 +1,12 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Demo-only rule: authenticated clients may read/write device docs.
+    // Do NOT deploy this rule to production; it permits command tampering.
+    // For a safe real deployment, use a backend to create pairings and
+    // authorize admin UIDs for each device.
+    match /devices/{deviceId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
