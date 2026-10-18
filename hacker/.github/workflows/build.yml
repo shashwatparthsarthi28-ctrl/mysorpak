@@ -32,13 +32,21 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Install SDK
+      - name: Install Android SDK packages
         run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
 
+      - name: Verify project
+        run: |
+          test -f hacker/settings.gradle.kts
+          test -f hacker/friend-app/build.gradle.kts
+          test -f hacker/admin-app/build.gradle.kts
+
       - name: Build Friend APK
+        working-directory: hacker
         run: gradle --no-daemon :friend-app:assembleDebug
 
       - name: Build Admin APK
+        working-directory: hacker
         run: gradle --no-daemon :admin-app:assembleDebug
 
       - name: Upload APKs
@@ -46,6 +54,6 @@ jobs:
         with:
           name: CyberPrank-APKs
           path: |
-            friend-app/build/outputs/apk/debug/*.apk
-            admin-app/build/outputs/apk/debug/*.apk
+            hacker/friend-app/build/outputs/apk/debug/*.apk
+            hacker/admin-app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
