@@ -1,0 +1,64 @@
+
+name: Build Cyber Prank APKs
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Install Android SDK
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Verify project files
+        run: |
+          test -f hacker/settings.gradle.kts
+          test -f hacker/friend-app/build.gradle.kts
+          test -f hacker/admin-app/build.gradle.kts
+
+      - name: Build Friend APK
+        working-directory: hacker
+        run: gradle --no-daemon :friend-app:assembleDebug
+
+      - name: Build Admin APK
+        working-directory: hacker
+        run: gradle --no-daemon :admin-app:assembleDebug
+
+      - name: Upload Friend APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CyberPrank-Friend-APK
+          path: hacker/friend-app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+
+      - name: Upload Admin APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CyberPrank-Admin-APK
+          path: hacker/admin-app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
